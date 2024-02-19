@@ -1,18 +1,30 @@
-query="$*"
-# Check if there is a running Chrome incognito window
-chrome_window=$(wmctrl -lx | grep "Google-chrome" | grep "incognito" | tail -n 1 | awk '{print $1}')
-if [ -n "$chrome_window" ]; then
-    # If there is an existing incognito window, use it to open a new tab
-    wmctrl -ia "$chrome_window"
-    sleep 0.5  # Wait for window focus to switch
-    xdotool key --clearmodifiers ctrl+t
+#!/bin/bash
+
+search_term="$@"
+
+# Check if Google Chrome is running in incognito mode
+chrome_incognito_count=$(pgrep -c -f "chrome --incognito")
+
+if [ "$chrome_incognito_count" -eq 0 ]; then
+    # If no incognito window is open, open a new one with the search term
+    google-chrome --incognito "https://www.google.com/search?q=${search_term// /+}"
 else
-    # If there is no existing incognito window, open a new one
-    google-chrome --incognito &
-    sleep 1  # Wait for Chrome to open
-    xdotool key --clearmodifiers ctrl+t
+    # If incognito window(s) exist, get the most recent one and open a new tab with the search term
+    incognito_windows=$(wmctrl -l | grep "Google Chrome" | grep "Incognito")
+
+    if [ -n "$incognito_windows" ]; then
+        # Get the most recent incognito window
+        most_recent_window_id=$(echo "$incognito_windows" | tail -n 1 | awk '{print $1}')
+        # Focus on the most recent window
+        wmctrl -i -a "$most_recent_window_id"
+        # Open a new tab with the search term
+        xdotool key ctrl+t
+        xdotool type --delay 50 "$search_term" # Typing the search term
+        xdotool key Return # Pressing Enter to execute the search
+    else
+        # If no incognito window is found, open a new incognito window with the search term
+        google-chrome --incognito "https://www.google.com/search?q=${search_term// /+}"
+    fi
 fi
-# Wait for the new tab to load before typing the query
-sleep 1
-xdotool type --delay 50 "$query"
-xdotool key --delay 50 "Return"
+
+exit 0
