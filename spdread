@@ -1,0 +1,1 @@
+xclip -out | umlautesc | speedread -w 500
