@@ -1,5 +1,1 @@
-<<<<<<< HEAD
 xclip -out | umlautesc | speedread -w 420
-=======
-xclip -out | umlautesc | speedread -m -w 450 $@
->>>>>>> ddd9872e0f6e4265f5fcc299aa77dae79bf3cc1a
