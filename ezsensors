@@ -1,0 +1,2 @@
+while true; do sensors | grep -i cpu; sleep 1; clear; done;
+
