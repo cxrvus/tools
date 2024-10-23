@@ -1,2 +1,2 @@
-while true; do sensors | grep -i cpu; sleep 1; clear; done;
+while true; do sensors | grep -Ei 'cpu|fan'; sleep 1; clear; done;
 
