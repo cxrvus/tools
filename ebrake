@@ -1,0 +1,21 @@
+#!/bin/bash
+
+get_free_memory_percentage() {
+    total_mem=$(free | grep Mem | awk '{print $2}')
+    free_mem=$(free | grep Mem | awk '{print $7}')
+    
+    free_percentage=$((free_mem * 100 / total_mem))
+    echo $free_percentage
+}
+
+while true; do
+    free_percentage=$(get_free_memory_percentage)
+    echo "${free_percentage}%"
+
+    if [ "$free_percentage" -le 3 ]; then
+        echo "Memory too low! Killing Process..."
+        pkill -fi code
+    fi
+
+    sleep 1
+done
