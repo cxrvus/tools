@@ -1,1 +1,1 @@
-git stash push -m "$*"
+git stash push -um "$*"
