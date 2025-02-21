@@ -1,0 +1,1 @@
+rm tmp/_tmp.md && python3 eztranscribe.py tmp de && cat tmp/_tmp.md | ezcopy
