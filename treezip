@@ -1,0 +1,12 @@
+treefile="Index - $1.md"
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <directory>"
+    exit 1
+fi
+
+echo '```'  > "$treefile"
+tree $1    >> "$treefile"
+echo '```' >> "$treefile"
+
+zip -r $1 $1
