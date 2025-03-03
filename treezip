@@ -1,4 +1,4 @@
-treefile="Index - $1.md"
+treefile="$1 (Tree).md"
 
 if [ -z "$1" ]; then
     echo "Usage: $0 <directory>"
