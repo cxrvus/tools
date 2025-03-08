@@ -1,1 +1,1 @@
-git log --oneline -n 10
+git log --graph --oneline -n 10
