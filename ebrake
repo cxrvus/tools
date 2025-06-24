@@ -15,6 +15,7 @@ while true; do
     if [ "$free_percentage" -le 3 ]; then
         echo "Memory too low! Killing Process..."
         pkill -fi code
+        pkill -fi FL64.exe
     fi
 
     sleep 1
