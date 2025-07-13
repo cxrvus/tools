@@ -10,7 +10,9 @@ get_free_memory_percentage() {
 
 while true; do
     free_percentage=$(get_free_memory_percentage)
-    echo "${free_percentage}%"
+    sensor_info=$(sensors | awk '/^Package id 0:/ {temp=$4} /^fan1:/ {fan=$2} END {print temp " | " fan " RPM"}')
+
+    echo "RAM ${free_percentage}% | $sensor_info"
 
     if [ "$free_percentage" -le 3 ]; then
         echo "Memory too low! Killing Process..."
