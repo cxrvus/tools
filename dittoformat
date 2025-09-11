@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# usage: dittoformat <source-dir> [dest-dir]
+# Example:  ./dittoformat G1        # moves LOOP files to the current working dir
+#           ./dittoformat G1 ./out  # moves them into ./out
+
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <source-dir> [dest-dir]"
+  exit 1
+fi
+
+SRC_DIR="$1"
+DEST_DIR="${2:-$(pwd)}"
+
+if [ ! -d "$SRC_DIR" ]; then
+  echo "Source directory '$SRC_DIR' not found."
+  exit 1
+fi
+
+if [ ! -d "$DEST_DIR" ]; then
+  echo "Destination directory '$DEST_DIR' not found."
+  exit 1
+fi
+
+# Make globbing return nothing if no match (instead of the literal pattern)
+shopt -s nullglob
+
+moved=0
+
+for dir in "$SRC_DIR"/[0-9][0-9]*track; do
+  # skip non-directories (nullglob makes this safe)
+  [ -d "$dir" ] || continue
+
+  base=$(basename "$dir")
+  if [[ "$base" =~ ^([0-9]{2}) ]]; then
+    num="${BASH_REMATCH[1]}"
+  else
+    echo "Skipping '$dir' (does not start with two digits)."
+    continue
+  fi
+
+  # find loop file case-insensitively (handles LOOP.wav, Loop.wav, loop.wav)
+  src=$(find "$dir" -maxdepth 1 -type f -iname 'loop.wav' -print -quit || true)
+  if [ -z "$src" ]; then
+    echo "No LOOP.wav in '$dir' -> skipping."
+    continue
+  fi
+
+  dest="$DEST_DIR/LOOP${num}.wav"
+
+  # avoid overwriting: add suffix if needed
+  if [ -e "$dest" ]; then
+    i=1
+    while [ -e "${DEST_DIR}/LOOP${num}-${i}.wav" ]; do
+      i=$((i+1))
+    done
+    dest="${DEST_DIR}/LOOP${num}-${i}.wav"
+  fi
+
+  echo "Moving: '$src' -> '$dest'"
+  mv -- "$src" "$dest"
+  moved=$((moved+1))
+done
+
+if [ "$moved" -eq 0 ]; then
+  echo "No files moved. Check that your track folders are named like '01track' and contain a 'LOOP.wav' file."
+else
+  echo "Done. Moved $moved file(s) to '$DEST_DIR'."
+fi
+
