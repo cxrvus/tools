@@ -1,0 +1,3 @@
+printf "## Bookmarks\n\n" > Bookmarks.md
+(pandoc $1 -t markdown_strict | tail -n +6) >> Bookmarks.md
+rm $1
