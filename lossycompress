@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -e
+
+input_pdf="$1"
+output_pdf="$2"
+
+workdir=$(mktemp -d)
+pdftoppm -r 160 -png "$input_pdf" "$workdir/page"
+
+mkdir "$workdir/compressed_tmp0"
+for img in "$workdir"/page-*.png; do
+    echo "compressing $(basename "$img")"
+    base=$(basename "$img" .png)
+    ffmpeg -y -i "$img" \
+        -vf "scale=iw*0.5:ih*0.5" \
+        -q:v 40 \
+        "$workdir/compressed_tmp0/${base}.jpg" \
+        >/dev/null 2>&1
+done
+
+img2pdf "$workdir/compressed_tmp0"/*.jpg -o "$output_pdf"
+
