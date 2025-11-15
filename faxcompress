@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -e
+
+in="$1"
+out="$2"
+
+tmp="$(mktemp -d)"
+pdftoppm -png -r 300 "$in" "$tmp/page"
+
+mkdir "$tmp/fax"
+for img in "$tmp"/page-*.png; do
+    echo "faxing $(basename "$img")"
+
+    convert "$img" \
+        -colorspace Gray \
+        -normalize \
+        -resize 80% \
+        -blur 0x1.2 \
+        -threshold 65% \
+        -compress Group4 \
+        "$tmp/fax/$(basename "$img" .png).tiff"
+done
+
+img2pdf "$tmp/fax"/*.tiff -o "$out"
+
