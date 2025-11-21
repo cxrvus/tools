@@ -7,7 +7,7 @@ function error(msg) {
 }
 
 // TODO: rm debug dir
-const dir = process.argv[2] ?? '/home/cxrvus/obsidian/Cxrvus/Material/Notes';
+const dir = process.argv[2] ?? '/home/cxrvus/obsidian/Cxrvus/Material/Test';
 if (!dir) { error('no directory argument provided'); }
 
 const stats = fs.statSync(dir);
@@ -41,14 +41,13 @@ mdFiles.forEach(sourceFile =>
 		mdFiles.find(targetFile =>
 			targetFile.name != sourceFile.name &&
 			targetFile.name == link.target + '.md' 
-		)?.backlinks.push(link.target)
+		)?.backlinks.push(simpleLink(sourceFile.name))
 	)
 );
 
 // todo: turn backlinks into a Set
 
 mdFiles
-	.filter(file => file.backlinks.length)
 	.forEach(file => console.log(JSON.stringify({...file, content:''}, null, 2)));
 
 function fetchLinks(content) {
@@ -81,4 +80,20 @@ function fetchLinks(content) {
 	}
 
 	return links;
+}
+
+function simpleLink(fileName) {
+	return aliasLink(fileName, null);
+}
+
+function aliasLink(fileName, alias) {
+	const target = fileName.endsWith('.md') ? fileName.substring(0, fileName.length-3) : fileName;
+
+	return {
+		target,
+		raw: `[[${target}]]`,
+		anchor: null,
+		alias: null,
+		embed: false,
+	}
 }
