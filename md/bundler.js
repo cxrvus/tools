@@ -15,6 +15,9 @@ if (!stats.isDirectory()) { error(`"${dir}" is not a directory`); }
 
 const dirFileNames = fs.readdirSync(dir);
 
+const tocName = `+TOC.md`;
+const tocLink = aliasLink(tocName, 'TOC');
+
 const mdFiles = dirFileNames
 	.sort((a, b) => a.localeCompare(b))
 	.filter(name => path.extname(name).toLowerCase() === '.md')
@@ -31,7 +34,7 @@ const mdFiles = dirFileNames
 	.map(file => ({
 		...file,
 		outlinks: fetchLinks(file.content),
-		backlinks: [],
+		backlinks: [tocLink],
 	}))
 ;
 
@@ -46,6 +49,11 @@ mdFiles.forEach(sourceFile =>
 );
 
 // todo: turn backlinks into a Set
+
+// todo: TOC content
+const tocContent = "todo";
+const tocFile = { name: tocName, content: tocContent };
+mdFiles.push(tocFile);
 
 mdFiles
 	.forEach(file => console.log(JSON.stringify({...file, content:''}, null, 2)));
