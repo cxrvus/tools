@@ -1,0 +1,102 @@
+#!/bin/bash
+
+# Script to convert PDF files to Markdown using Marker
+# Splits large PDFs into single-page PDFs to avoid memory issues, converts each, then merges
+# Usage: ./pdftomd <input.pdf>
+# Output: <input.pdf.md>
+
+if [ $# -eq 0 ]; then
+    echo "Usage: pdftomd <input.pdf>"
+    echo "Output: <input.pdf.md>"
+    exit 1
+fi
+
+input_pdf="$1"
+
+# Check if file exists
+if [ ! -f "$input_pdf" ]; then
+    echo "Error: File '$input_pdf' not found"
+    exit 1
+fi
+
+# Check if file is a PDF
+if [[ ! "$input_pdf" =~ \.pdf$ ]]; then
+    echo "Error: File '$input_pdf' is not a PDF"
+    exit 1
+fi
+
+# Define output directory and file
+input_dir=$(dirname "$input_pdf")
+filename=$(basename "$input_pdf" .pdf)
+temp_dir=$(mktemp -d)
+pages_dir="$temp_dir/pages"
+output_dir="$temp_dir/output"
+output_md="${input_pdf}.md"
+
+mkdir -p "$pages_dir" "$output_dir"
+
+# Get total number of pages
+total_pages=$(pdfinfo "$input_pdf" | grep "Pages:" | awk '{print $2}')
+
+if [ -z "$total_pages" ] || [ "$total_pages" -le 0 ]; then
+    echo "Error: Could not determine PDF page count"
+    rm -rf "$temp_dir"
+    exit 1
+fi
+
+echo "Converting $total_pages pages from $input_pdf..."
+
+# Split PDF into single page PDFs
+pdfseparate "$input_pdf" "$pages_dir/page-%d.pdf"
+
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to split PDF"
+    rm -rf "$temp_dir"
+    exit 1
+fi
+
+# Convert each page to markdown
+declare -a md_files
+for page_pdf in "$pages_dir"/page-*.pdf; do
+    page_num=$(basename "$page_pdf" .pdf | sed 's/page-//')
+    page_output_dir="$output_dir/page_$page_num"
+    mkdir -p "$page_output_dir"
+    
+    echo -n "Processing page $page_num/$total_pages... "
+    marker_single "$page_pdf" --output_dir "$page_output_dir" --output_format markdown > /dev/null 2>&1
+    
+    if [ $? -eq 0 ]; then
+        # Find the markdown file
+        md_file=$(find "$page_output_dir" -name "*.md" -type f | head -1)
+        if [ -f "$md_file" ]; then
+            md_files+=("$md_file")
+            echo "Done"
+        else
+            echo "Failed (no markdown output)"
+            rm -rf "$temp_dir"
+            exit 1
+        fi
+    else
+        echo "Failed"
+        rm -rf "$temp_dir"
+        exit 1
+    fi
+done
+
+# Merge all markdown files
+echo "Merging markdown files..."
+{
+    for i in "${!md_files[@]}"; do
+        cat "${md_files[$i]}"
+        if [ $((i + 1)) -lt ${#md_files[@]} ]; then
+            echo ""
+            echo "---"
+            echo ""
+        fi
+    done
+} > "$output_md"
+
+# Clean up
+rm -rf "$temp_dir"
+
+echo "Successfully converted: $input_pdf -> $output_md"
