@@ -1,0 +1,36 @@
+#!/bin/bash
+
+input_pdf="$1"
+[ -z "$input_pdf" ] && echo "Usage: pdftomd <input.pdf>" && exit 1
+[ ! -f "$input_pdf" ] && echo "Error: File not found" && exit 1
+
+tmpdir=$(mktemp -d)
+trap "rm -rf $tmpdir" EXIT
+output_md="${input_pdf}.md"
+
+# Split into pages
+pdfseparate "$input_pdf" "$tmpdir/page-%d.pdf" || exit 1
+
+# Convert each page
+for pdf in $(ls "$tmpdir"/page-*.pdf | sort -V); do
+    num=$(basename "$pdf" .pdf | sed 's/page-//')
+    echo "Converting page $num..."
+    marker_single "$pdf" --output_dir "$tmpdir/p$num" --output_format markdown || exit 1
+    find "$tmpdir/p$num" -name "*.md" -exec mv {} "$tmpdir/$(printf "%05d" $num).md" \;
+done
+
+# Merge in correct numeric order
+{
+    first=true
+    for md in $(ls "$tmpdir"/*.md 2>/dev/null | sort -V); do
+        [ "$first" = false ] && echo -e "\n---\n"
+        cat "$md"
+        first=false
+    done
+} > "$output_md"
+
+echo "Done: $output_md"
+
+
+
+

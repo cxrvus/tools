@@ -1,0 +1,1 @@
+ffmpeg -i "$1" -lavfi showspectrumpic=s=1280x720 "$1.png"
