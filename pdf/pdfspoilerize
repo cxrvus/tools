@@ -1,0 +1,51 @@
+#!/bin/bash
+set -e
+
+FIRST=""
+LAST=""
+
+usage() {
+  echo "Usage: pdfspoilerize [-f first_page] [-l last_page] file.pdf"
+  exit 1
+}
+
+while getopts "f:l:" opt; do
+  case "$opt" in
+    f) FIRST="$OPTARG" ;;
+    l) LAST="$OPTARG" ;;
+    *) usage ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[ $# -eq 1 ] || usage
+
+PDF="$1"
+BASENAME="$(basename "$PDF" .pdf)"
+OUTDIR="$(pwd)"
+TMPDIR="$(mktemp -d)"
+
+trap 'rm -rf "$TMPDIR"' EXIT
+
+PPM_ARGS=(-png)
+[ -n "$FIRST" ] && PPM_ARGS+=(-f "$FIRST")
+[ -n "$LAST"  ] && PPM_ARGS+=(-l "$LAST")
+
+pdftoppm "${PPM_ARGS[@]}" "$PDF" "$TMPDIR/$BASENAME"
+
+IMAGES=("$TMPDIR"/"$BASENAME"-*.png)
+TOTAL="${#IMAGES[@]}"
+COUNT=0
+
+for IMG in "${IMAGES[@]}"; do
+  COUNT=$((COUNT + 1))
+  PAGE="$(basename "$IMG" .png)"
+  OUTFILE="$OUTDIR/${PAGE}_spoiler.xcf"
+
+  printf "[%d/%d] %s\n" "$COUNT" "$TOTAL" "$(basename "$OUTFILE")"
+
+  imgspoilerize "$IMG" "$OUTFILE"
+done
+
+echo "Done. Wrote $TOTAL files."
+
