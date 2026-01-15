@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+IN="$1"
+OUT="${IN%.*}_spoiler.xcf"
+
+gimp -i -b "
+(let* (
+  (img (car (gimp-file-load RUN-NONINTERACTIVE \"$IN\" \"$IN\")))
+  (base (car (gimp-image-get-active-layer img)))
+  (blur (car (gimp-layer-copy base TRUE)))
+)
+  (gimp-image-insert-layer img blur 0 -1)
+  (plug-in-gauss RUN-NONINTERACTIVE img blur 30 30 0)
+  (gimp-file-save RUN-NONINTERACTIVE img blur \"$OUT\" \"$OUT\")
+)
+" -b "(gimp-quit 0)"
+
