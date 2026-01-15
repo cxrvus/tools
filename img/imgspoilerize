@@ -2,7 +2,12 @@
 set -e
 
 IN="$1"
-OUT="${IN%.*}_spoiler.xcf"
+OUT="$2"
+
+if [ -z "$IN" ] || [ -z "$OUT" ]; then
+  echo "Usage: imgspoilerize input.png output.xcf" >&2
+  exit 1
+fi
 
 gimp -i -b "
 (let* (
@@ -14,5 +19,5 @@ gimp -i -b "
   (plug-in-gauss RUN-NONINTERACTIVE img blur 30 30 0)
   (gimp-file-save RUN-NONINTERACTIVE img blur \"$OUT\" \"$OUT\")
 )
-" -b "(gimp-quit 0)"
+" -b "(gimp-quit 0)" 2>/dev/null
 
