@@ -13,7 +13,8 @@ try {
 } catch {
 	process.exit(1)
 }
-const lines = fileContent.split('\n').filter(line => line.trim() !== '')
+
+const blocks = fileContent.split(/\n{2,}/)
 
 function parseList(lines, level = 0) {
 	const result = []
@@ -28,7 +29,7 @@ function parseList(lines, level = 0) {
 		else if (indentLevel > level) {
 			const last = result.pop()
 			const [nested] = parseList(lines, level + 1)
-			result.push(last + ':' + nested)
+			result.push(last + ':: ' + nested)
 		} else {
 			result.push(stripped.replace(/^-\s*/, ''))
 			lines.shift()
@@ -41,6 +42,11 @@ function parseList(lines, level = 0) {
 	return [openB + result.join(' || ') + closeB, lines]
 }
 
-const [nestedText] = parseList(lines)
-console.log(nestedText)
+const parsedBlocks = blocks.map(block => {
+	const lines = block.split('\n').filter(line => line.trim() !== '')
+	const [parsed] = parseList(lines)
+	return parsed
+})
+
+console.log(parsedBlocks.join('\n\n'))
 
