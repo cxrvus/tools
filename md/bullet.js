@@ -5,7 +5,7 @@ const path = require('path')
 const filePath = process.argv[2]
 if (!filePath) process.exit(1)
 
-const brackets = ["()", "[]", "{}", "<>"]
+const brackets = ["()", "{}", "<>"]
 
 let fileContent
 try {
