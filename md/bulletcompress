@@ -1,0 +1,2 @@
+dirpath=$(dirname $(realpath $0))
+node "$dirpath/bullet.js" "$1"
