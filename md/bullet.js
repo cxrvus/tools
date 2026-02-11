@@ -21,7 +21,7 @@ try {
 	process.exit(1)
 }
 
-fileContent = fileContent.replace(/\s?\(\[\[.+?\]\]\)\s?/g, '')
+fileContent = fileContent.replace(/:\n/, '\n').replace(/\s?\(\[\[.+?\]\]\)\s?/g, '')
 
 const blocks = fileContent.split(/\n{2,}/)
 
