@@ -7,6 +7,13 @@ if (!filePath) process.exit(1)
 
 const brackets = ["()", "[]", "{}", "<>"]
 
+const escapeMap = {
+	'[': '\\[',
+	']': '\\]',
+	'<': '\\<',
+	'>': '\\>'
+}
+
 let fileContent
 try {
 	fileContent = fs.readFileSync(path.resolve(filePath), 'utf-8')
@@ -20,6 +27,7 @@ const blocks = fileContent.split(/\n{2,}/)
 
 function parseList(lines, level = 0) {
 	const result = []
+
 	while (lines.length) {
 		const line = lines[0]
 		const stripped = line.trim()
@@ -38,9 +46,13 @@ function parseList(lines, level = 0) {
 		}
 	}
 
-	if (level === 0) return [result.join(' || '), lines]
+	if (level === 0)
+		return [result.join(' || '), lines]
 
-	const [openB, closeB] = brackets[(level - 1) % brackets.length].split('')
+	const raw = brackets[(level - 1) % brackets.length]
+	const openB = escapeMap[raw[0]] || raw[0]
+	const closeB = escapeMap[raw[1]] || raw[1]
+
 	return [openB + result.join(' || ') + closeB, lines]
 }
 
