@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 const fs = require('fs')
 const path = require('path')
 
@@ -7,11 +6,7 @@ if (!filePath) process.exit(1)
 
 const brackets = ["{}", "[]", "()", "<>"]
 
-const escapeMap = {
-	'[': '\\[',
-	']': '\\]',
-	'<': '\\<',
-	'>': '\\>'
+const escapeMap = { '[': '\\[', ']': '\\]', '<': '\\<', '>': '\\>'
 }
 
 let fileContent
