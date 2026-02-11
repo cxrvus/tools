@@ -14,6 +14,8 @@ try {
 	process.exit(1)
 }
 
+fileContent = fileContent.replace(/\s?\(\[\[.+?\]\]\)\s?/g, '')
+
 const blocks = fileContent.split(/\n{2,}/)
 
 function parseList(lines, level = 0) {
