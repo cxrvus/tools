@@ -23,7 +23,7 @@ done
 {
     first=true
     for md in $(ls "$tmpdir"/*.md 2>/dev/null | sort -V); do
-        [ "$first" = false ] && echo -e "\n---\n"
+        [ "$first" = false ] && echo -e "\n\n---\n\n"
         cat "$md"
         first=false
     done
