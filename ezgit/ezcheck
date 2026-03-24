@@ -1,0 +1,1 @@
+cd $1 && git status | head -n 5 && cd ..
