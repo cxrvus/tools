@@ -1,0 +1,26 @@
+#!/bin/bash
+# Usage: transpose <source_dir> <dest_dir>
+set -e
+
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <source_dir> <dest_dir>"
+    exit 1
+fi
+
+SRC_DIR="$1"
+DEST_DIR="$2"
+
+mkdir -p "$DEST_DIR"
+
+for A in "$SRC_DIR"/*/; do
+    A_name=$(basename "$A")
+    for B in "$A"*/; do
+        [ -d "$B" ] || continue   # skip if no subfolders
+        B_name=$(basename "$B")
+        mkdir -p "$DEST_DIR/$B_name/$A_name"
+        # copy contents of A/B into dest/B/A
+        cp -r "$B"* "$DEST_DIR/$B_name/$A_name/" 2>/dev/null || true
+    done
+done
+
+echo "Done. Transposed structure is in $DEST_DIR"
