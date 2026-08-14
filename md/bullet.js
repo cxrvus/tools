@@ -18,6 +18,13 @@ try {
 	process.exit(1)
 }
 
+const frontmatterMatch = fileContent.match(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/)
+let frontmatter = ''
+if (frontmatterMatch) {
+	fileContent = fileContent.slice(frontmatterMatch[0].length)
+	frontmatter = frontmatterMatch[0]
+}
+
 fileContent = fileContent.replace(/:\n/, '\n').replace(/\s?\(\[\[.+?\]\]\)/g, '')
 
 const blocks = fileContent.split(/\n{2,}/)
@@ -57,7 +64,8 @@ const parsedBlocks = blocks.map(block => {
 	const lines = block.split('\n').filter(line => line.trim() !== '')
 	const [parsed] = parseList(lines)
 	return parsed
-})
+}).filter(block => block && block.trim() !== '')
 
-console.log(parsedBlocks.join('\n\n'))
-
+const outputContent = parsedBlocks.join('\n\n')
+const output = frontmatter ? frontmatter + (outputContent ? '\n\n' + outputContent : '') : outputContent;
+console.log(output);
