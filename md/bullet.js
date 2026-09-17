@@ -4,7 +4,10 @@ const fs = require('fs')
 const path = require('path')
 
 const filePath = process.argv[2]
-if (!filePath) process.exit(1)
+if (!filePath) {
+	console.error("please provide a file path!")
+	process.exit(1)
+}
 
 const brackets = ["{}", "[]", "()", "<>"]
 
@@ -15,6 +18,7 @@ let fileContent
 try {
 	fileContent = fs.readFileSync(path.resolve(filePath), 'utf-8')
 } catch {
+	console.error("could not read file!")
 	process.exit(1)
 }
 
