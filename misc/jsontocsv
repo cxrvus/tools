@@ -1,0 +1,4 @@
+file=$1
+default_sep=";"
+sep="${2:-$default_sep}"
+cat $file | jq -r '.[]| join("'"$sep"'")'
